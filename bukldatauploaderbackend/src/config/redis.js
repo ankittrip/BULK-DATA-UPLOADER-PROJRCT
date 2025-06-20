@@ -1,54 +1,45 @@
-import { createClient } from "redis"
+// config/redisClient.js
+import { createClient } from "redis";
+import dotenv from "dotenv";
+dotenv.config();
 
-// Create Redis client
-export const redisClient = createClient({
-  host: process.env.REDIS_HOST || "127.0.0.1",
-  port: process.env.REDIS_PORT || 6379,
-  retry_strategy: (options) => {
-    if (options.error && options.error.code === "ECONNREFUSED") {
-      
-      return new Error("Redis server connection refused")
-    }
-    if (options.total_retry_time > 1000 * 60 * 60) {
-      
-      return new Error("Retry time exhausted")
-    }
-    if (options.attempt > 10) {
-    
-      return undefined
-    }
-    return Math.min(options.attempt * 100, 3000)
+const isRedisCloud = process.env.REDIS_URL?.startsWith("rediss://");
+
+
+const redisClient = createClient({
+  url: process.env.REDIS_URL,
+  socket: {
+    tls: isRedisCloud,
   },
-})
+});
 
-// Handle errors
 redisClient.on("error", (err) => {
-  
-})
+  console.error("Redis Client Error:", err);
+});
 
 redisClient.on("connect", () => {
-  
-})
+  console.log("Connecting to Redis...");
+});
 
 redisClient.on("ready", () => {
-  
-})
+  console.log("Redis client connected and ready.");
+});
 
 redisClient.on("end", () => {
-  
-})
+  console.log("Redis connection closed.");
+});
 
-// Connect to Redis
+// Connect Redis
 const connectRedis = async () => {
   try {
     if (!redisClient.isOpen) {
-      await redisClient.connect()
+      await redisClient.connect();
     }
-  } catch (error) {
-    console.error("Failed to connect to Redis:", error)
-    throw error
+  } catch (err) {
+    console.error("Redis connection failed:", err);
+    throw err;
   }
-}
+};
 
-export { connectRedis }
-export default redisClient
+export { connectRedis };
+export default redisClient;
