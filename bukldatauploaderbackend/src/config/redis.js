@@ -1,21 +1,32 @@
+// src/config/redis.js
 import Redis from "ioredis";
 import dotenv from "dotenv";
 dotenv.config();
 
 const redisUrl = process.env.REDIS_URL;
 
-if (!redisUrl) throw new Error("REDIS_URL not defined");
+if (!redisUrl) {
+  throw new Error("REDIS_URL is not defined in the environment variables");
+}
 
-const redisClient = new Redis({
-  host: "redis-17191.c322.us-east-1-2.ec2.redns.redis-cloud.com",
-  port: 17191,
-  password: process.env.REDIS_PASSWORD,
+// Use full URL to let Redis handle the auth
+const redisClient = new Redis(redisUrl); 
+
+redisClient.on("connect", () => {
+  console.log("Connecting to Redis...");
 });
 
-redisClient.on("connect", () => console.log("Connecting to Redis..."));
-redisClient.on("ready", () => console.log("Redis client connected and ready."));
-redisClient.on("error", (err) => console.error("Redis Client Error:", err));
-redisClient.on("end", () => console.log("Redis connection closed."));
+redisClient.on("ready", () => {
+  console.log("Redis client connected and ready.");
+});
+
+redisClient.on("error", (err) => {
+  console.error("Redis Client Error:", err);
+});
+
+redisClient.on("end", () => {
+  console.log("Redis connection closed.");
+});
 
 export const connectRedis = async () => {
   try {
