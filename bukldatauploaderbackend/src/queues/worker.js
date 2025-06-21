@@ -1,19 +1,22 @@
-// src/queues/worker.js
+// src/queues/fileWorker.js
 import { Worker } from "bullmq";
-import { handleJob } from "../workers/csvProcessor.worker.js";
 import dotenv from "dotenv";
 dotenv.config();
+
+import { handleJob } from "../workers/csvProcessor.worker.js";
+
+if (!process.env.REDIS_URL) {
+  throw new Error("REDIS_URL is not defined in environment variables");
+}
 
 const worker = new Worker(
   "file-processing",
   async (job) => {
-    console.log(`📥 Processing job ${job.id}`);
-    await handleJob(job.data); // { filePath, jobId }
+    await handleJob(job.data);
   },
   {
     connection: {
-      host: process.env.REDIS_HOST || "127.0.0.1",
-      port: process.env.REDIS_PORT || 6379,
+      url: process.env.REDIS_URL,
     },
   }
 );
