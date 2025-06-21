@@ -1,11 +1,16 @@
 // src/queues/csvQueue.js
+import { Queue } from "bullmq";
 import dotenv from "dotenv";
 dotenv.config();
 
-import { Queue } from "bullmq";
+const redisUrl = process.env.REDIS_URL;
+
+if (!redisUrl) {
+  throw new Error("REDIS_URL is not defined in the environment variables");
+}
 
 export const csvQueue = new Queue("csv-processing-queue", {
   connection: {
-    url: process.env.REDIS_URL,
+    url: redisUrl,
   },
 });
