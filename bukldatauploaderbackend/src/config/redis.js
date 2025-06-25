@@ -26,11 +26,7 @@ redisClient.on('reconnecting', () => console.log('↻ Redis reconnecting...'));
 redisClient.on('error', (err) => console.error(' Redis Client Error:', err));
 redisClient.on('end', () => console.log(' Redis connection closed'));
 
-redisClient.on('connect', () => console.log('🔌 Connecting to Redis...'));
-redisClient.on('ready', () => console.log('✅ Redis client connected and ready'));
-redisClient.on('reconnecting', () => console.log('↻ Redis reconnecting...'));
-redisClient.on('error', (err) => console.error('❌ Redis Client Error:', err));
-redisClient.on('end', () => console.log('🛑 Redis connection closed'));
+
 
 
 const connectRedis = async () => {
