@@ -1,54 +1,37 @@
-import { createClient } from "redis"
+// src/config/redis.js
+import { createClient } from 'redis';
+import dotenv from 'dotenv';
 
-// Create Redis client
-export const redisClient = createClient({
-  host: process.env.REDIS_HOST || "127.0.0.1",
-  port: process.env.REDIS_PORT || 6379,
-  retry_strategy: (options) => {
-    if (options.error && options.error.code === "ECONNREFUSED") {
-      
-      return new Error("Redis server connection refused")
-    }
-    if (options.total_retry_time > 1000 * 60 * 60) {
-      
-      return new Error("Retry time exhausted")
-    }
-    if (options.attempt > 10) {
-    
-      return undefined
-    }
-    return Math.min(options.attempt * 100, 3000)
+dotenv.config();
+
+const redisClient = createClient({
+  username: process.env.REDIS_USERNAME || 'default',
+  password: process.env.REDIS_PASSWORD,
+  socket: {
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    // TLS must be false or removed
+    // tls: false ← OPTIONAL; default is false
+    reconnectStrategy: (retries) => Math.min(retries * 100, 5000),
   },
-})
+});
 
-// Handle errors
-redisClient.on("error", (err) => {
-  
-})
+// Event listeners
+redisClient.on('connect', () => console.log('🔌 Connecting to Redis...'));
+redisClient.on('ready', () => console.log('✅ Redis client connected and ready'));
+redisClient.on('reconnecting', () => console.log('↻ Redis reconnecting...'));
+redisClient.on('error', (err) => console.error('❌ Redis Client Error:', err));
+redisClient.on('end', () => console.log('🛑 Redis connection closed'));
 
-redisClient.on("connect", () => {
-  
-})
-
-redisClient.on("ready", () => {
-  
-})
-
-redisClient.on("end", () => {
-  
-})
-
-// Connect to Redis
 const connectRedis = async () => {
   try {
-    if (!redisClient.isOpen) {
-      await redisClient.connect()
-    }
-  } catch (error) {
-    console.error("Failed to connect to Redis:", error)
-    throw error
+    await redisClient.connect();
+    await redisClient.ping();
+    console.log('🩺 Redis PING successful');
+  } catch (err) {
+    console.error('❌ Redis connection failed:', err);
+    throw err;
   }
-}
+};
 
-export { connectRedis }
-export default redisClient
+export { redisClient, connectRedis };

@@ -1,0 +1,4 @@
+storeName,email
+Store A,valid@email.com
+,missing@email.com
+Store C,not-an-email
