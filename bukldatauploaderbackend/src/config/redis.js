@@ -13,6 +13,7 @@ const redisClient = createClient({
 
     // TLS must be false or removed
     // tls: false ← OPTIONAL; default is false
+    tls: process.env.REDIS_TLS === 'true',  // Optional logic
 
     reconnectStrategy: (retries) => Math.min(retries * 100, 5000),
   },
